@@ -1,6 +1,6 @@
-"# aBook" 
--dmd required. http://dlang.org/ 
--QtE5 required. https://github.com/MGWL/QtE5 
+"# aBook"
+-dmd required. http://dlang.org/
+-QtE5 required. https://github.com/MGWL/QtE5
 -mysql-native required. https://github.com/mysql-d/mysql-native
 
 MySQL Table create;
