@@ -17,17 +17,17 @@ class mydb{
 	string _dbname;
 	string _table;
 	string connStr;
-	bool _connected = false;
+	bool _connected;
 	ResultRange range;
 	QTableWidgetItem[][] table_items;
 	string[string] table_header;
-
 	}
 	Connection conn;
 
 	//Конструктор по умолчанию
 	this(){
-		table_header = ["f_name":"Имя","l_name":"Фамилия","m_name":"Отчество","b_date":"День рождения","sex":"Пол","email":"е-почта","mobile_phone":"Моб. телефон","note":"Заметки","postcode":"Индекс","country":"Страна","city":"Город","street":"Улица","house":"Дом","building":"строение","apartment":"Квартира"];
+		this._connected = false;
+		this.table_header = ["f_name":"Имя","l_name":"Фамилия","m_name":"Отчество","b_date":"День рождения","sex":"Пол","email":"е-почта","mobile_phone":"Моб. телефон","note":"Заметки","postcode":"Индекс","country":"Страна","city":"Город","street":"Улица","house":"Дом","building":"строение","apartment":"Квартира"];
 	}
 	
 	//Конструктор сразу с подключением в БД
@@ -157,6 +157,8 @@ class mydb{
 			
 			return aa;
 		}
+
+		//----------------На удаление-----------------
 		auto updateQuery(string s2,string s3,string s4,string s5,string s6,string s7,string s8,string s9,string s10,
 								string s11,string s12,string s13,string s14,string s15,string s16,string s17){
 			Prepared prepared;
@@ -175,6 +177,20 @@ class mydb{
 			if (this._connected == true)
 				this.conn.close;
 			}
+		void updateQuery(string[string] data){
+			auto id = data["id"];
+			data.remove("id");
+			if (data.length == 0) return;
+			string queryString = "UPDATE `"~this.table~"` SET ";
+			foreach (elem;data.byKey){
+				queryString ~= ", "~"`"~elem~"`"~"="~"\""~data[elem]~"\"" ;
+			}
+			
+			queryString = queryString[0..20]~queryString[21..$];
+			queryString ~=  " WHERE `id`="~id;
+			auto rowsAffected = this.conn.exec(queryString);
+			
+		}
 	}
 
 

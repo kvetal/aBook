@@ -25,15 +25,7 @@ extern (C) {
 	void on_signal(Form1* h,int n,int curr_r,int curr_c, int prev_r, int prev_c){
 		(*h).cellChange(curr_r,curr_c,prev_r,prev_c);
 	}
-	void on_okButton1(ContactEdit* h){
-		(*h).okButtonClick();
-	}
-	void on_cancelButton1(ContactEdit* h){
-		(*h).close();
-	}
-	void on_Changed(QWidget* h,int n){
-		writeln("Изменился текст");
-	}
+	
 	void on_exit(Form1* h){
 		(*h).close();
 	}
@@ -42,21 +34,20 @@ extern (C) {
 
 
 class Form1 :QWidget {
-	QVBoxLayout vLayAll; //Общь верт выравниватель
-	QHBoxLayout hLay1,hLay2,hLay3; //Горизонтальный выравниватель
-	QLabel Label1,Label_dbHost,Label_dbUser,Label_dbPort,Label_dbPwd,Label_dbName;
-	QPushButton Button1,Button2,Button3;
-	QAction actionButton1,actionButton3,actionButton2;
-	
-	QAction actionCellChanged,actionExit;
-	QTableWidget Table1;
-	QTableWidgetItem[][] items;
-	QTableWidgetItem[] cols_header;
-		public {
-		mydb db;
+	mydb db;
+	private {
+		ulong tRows,tCols;
+		QVBoxLayout vLayAll; //Общь верт выравниватель
+		QHBoxLayout hLay1,hLay2,hLay3; //Горизонтальный выравниватель
+		QLabel Label1,Label_dbHost,Label_dbUser,Label_dbPort,Label_dbPwd,Label_dbName;
+		QPushButton Button1,Button2,Button3;
+		QAction actionButton1,actionButton3,actionButton2;
+		QAction actionCellChanged,actionExit;
+		QTableWidget Table1;
+		QTableWidgetItem[][] items;
+		QTableWidgetItem[] cols_header;
+		QLineEdit LineEdit_dbHost,LineEdit_dbUser,LineEdit_dbPort,LineEdit_dbPwd,LineEdit_dbName;
 	}
-	ulong tRows,tCols;
-	QLineEdit LineEdit_dbHost,LineEdit_dbUser,LineEdit_dbPort,LineEdit_dbPwd,LineEdit_dbName;
 	this (){
 		super(this);
 		this.resize(900,500);
@@ -146,9 +137,9 @@ class Form1 :QWidget {
 			items = db.getItems("person"); //Получаем даттые из базы
 			if (items !is null) {
 				// получаем и задаем рвзмеры таблицы
-				tRows = items.length;
-				tCols = items[0].length;
-				Table1.setRowCount(cast(int)tRows).setColumnCount(cast(int)tCols).hideColumn(0);
+				this.tRows = items.length;
+				this.tCols = items[0].length;
+				Table1.setRowCount(cast(int)this.tRows).setColumnCount(cast(int)this.tCols).hideColumn(0);
 				//Заполняем заголовки столбцов
 				if (cols_header is null){
 					auto tmp_colNames = db.colNames; //Получаем имена Столбцов
@@ -188,18 +179,41 @@ class Form1 :QWidget {
 
 }
 
+extern (C){
+	void on_okButton1(ContactEdit* h){
+		(*h).okButtonClick();
+	}
+	void on_cancelButton1(ContactEdit* h){
+		(*h).close();
+	}
+	void on_noteChanged(ContactEdit* h,int n){
+		(*h).noteChanged();
+	}
+	
+	void on_sexChanged(ContactEdit* h,int n){
+		(*h).sexChanged();
+	}
+}
+
+
 class ContactEdit : QDialog {
-	QGridLayout gLay;
-	QLineEdit f_nameEdit, m_nameEdit, l_nameEdit, b_dateEdit, emailEdit, m_phoneEdit;
-	QLineEdit postcodeEdit, countryEdit, cityEdit, streetEdit, houseEdit, buildingEdit, apartmentEdit;
-	QComboBox sexEdit;
-	QPlainTextEdit noteEdit;
-	QPushButton okButton,cancelButton;
-	QLabel lFName, lMName, lLName, lB_Date,lEmail,lM_Phone, lSex, lNote;
-	QLabel lPostcode, lCountry, lCity, lStreet, lHouse, lBuilding, lApartment;
-	QAction actionOk, actionCancel, actionChanged;
 	mydb db;
 	string id;
+	
+	private {
+		QGridLayout gLay;
+		QLineEdit f_nameEdit, m_nameEdit, l_nameEdit, b_dateEdit, emailEdit, m_phoneEdit;
+		QLineEdit postcodeEdit, countryEdit, cityEdit, streetEdit, houseEdit, buildingEdit, apartmentEdit;
+		QComboBox sexEdit;
+		QPlainTextEdit noteEdit;
+		QPushButton okButton,cancelButton;
+		QLabel lFName, lMName, lLName, lB_Date,lEmail,lM_Phone, lSex, lNote;
+		QLabel lPostcode, lCountry, lCity, lStreet, lHouse, lBuilding, lApartment;
+		QAction actionOk, actionCancel, actionNoteChanged, actionSexChanged;
+		QLineEdit[string] outData;
+		bool noteModified = false;
+		bool sexModified = false;
+	}
 	this(QWidget parent, QtE.WindowType fl, Variant[string] data, mydb db){
 		this.db = db;
 		this.id = data["id"].toString;
@@ -209,30 +223,40 @@ class ContactEdit : QDialog {
 		gLay = new QGridLayout(this);
 		f_nameEdit = new QLineEdit(this);
 		f_nameEdit.setText(data["f_name"].toString);
+		f_nameEdit.setModified(false);
+		outData["f_name"] = f_nameEdit;
 		
 		m_nameEdit = new QLineEdit(this);
 		m_nameEdit.setText(data["m_name"].toString);
+		m_nameEdit.setModified(false);
+		outData["m_name"] = m_nameEdit;
 		
 		l_nameEdit = new QLineEdit(this);
 		l_nameEdit.setText(data["l_name"].toString);
+		l_nameEdit.setModified(false);
+		outData["l_name"] = l_nameEdit;
 		
 		b_dateEdit = new QLineEdit(this);
-		
 		QString datemask =  new QString("0000-00-00");
 		b_dateEdit.setInputMask(datemask);
 		if (validDate(data["b_date"].toString)){
 			Date dt = Date.fromSimpleString(data["b_date"].toString);
 			b_dateEdit.setText(dt.toISOExtString());
 		}
+		b_dateEdit.setModified(false);
+		outData["b_date"] = b_dateEdit;
 
 		emailEdit = new QLineEdit(this);
 		emailEdit.setText(data["email"].toString);
+		emailEdit.setModified(false);
+		outData["email"] = emailEdit;
 		
 		m_phoneEdit = new QLineEdit(this);
 		QString phonemask =  new QString("+0-000-000-00-00");
-		
 		m_phoneEdit.setInputMask(phonemask);
 		m_phoneEdit.setText(data["mobile_phone"].toString);
+		m_phoneEdit.setModified(false);
+		outData["mobile_phone"] = m_phoneEdit;
 		
 		
 		sexEdit = new QComboBox(this);
@@ -247,30 +271,43 @@ class ContactEdit : QDialog {
 		QString pcodemask =  new QString("0000000000");
 		postcodeEdit.setInputMask(pcodemask);
 		postcodeEdit.setText(data["postcode"].toString);
-		
+		postcodeEdit.setModified(false);
+		outData["postcode"] = postcodeEdit;
 		
 		countryEdit= new QLineEdit(this);
 		countryEdit.setText(data["country"].toString);
+		countryEdit.setModified(false);
+		outData["country"] = countryEdit;
 		
 		cityEdit = new QLineEdit(this);
 		cityEdit.setText(data["city"].toString);
+		cityEdit.setModified(false);
+		outData["city"] = cityEdit;
 		
 		streetEdit = new QLineEdit(this);
 		streetEdit.setText(data["street"].toString);
+		streetEdit.setModified(false);
+		outData["street"] = streetEdit;
 		
 		houseEdit = new QLineEdit(this);
 		QString nummask =  new QString("00000");
 		houseEdit.setInputMask(nummask);
 		houseEdit.setText(data["house"].toString);
 		if (data["house"].toString == "") houseEdit.setText("0");
+		houseEdit.setModified(false);
+		outData["house"] = houseEdit;
 		
 		buildingEdit = new QLineEdit(this);
 		buildingEdit.setText(data["building"].toString);
+		buildingEdit.setModified(false);
+		outData["building"] = buildingEdit;
 		
 		apartmentEdit = new QLineEdit(this);
 		apartmentEdit.setInputMask(nummask);
 		apartmentEdit.setText(data["apartment"].toString);
 		if (data["apartment"].toString == "") apartmentEdit.setText("0");
+		apartmentEdit.setModified(false);
+		outData["apartment"] = apartmentEdit;
 		
 		okButton = new QPushButton("OK");
 		cancelButton = new QPushButton("Отмена");
@@ -307,12 +344,14 @@ class ContactEdit : QDialog {
 		
 
 		actionCancel = new QAction(this,&on_cancelButton1,aThis);
-		actionChanged = new QAction(this,&on_Changed,aThis);
+		actionNoteChanged = new QAction(this,&on_noteChanged,aThis);
+		actionSexChanged = new QAction(this,&on_sexChanged,aThis);
 		actionOk = new QAction(this,&on_okButton1,aThis);
 
 		connects(cancelButton,"clicked()",actionCancel,"Slot()");
 		connects(okButton,"clicked()",actionOk,"Slot()");
-		connects(noteEdit,"textChanged()",actionChanged,"Slot()");
+		connects(noteEdit,"textChanged()",actionNoteChanged,"Slot()");
+		connects(sexEdit,"currentIndexChanged(int)",actionSexChanged,"Slot()");
 
 		QtE.AlignmentFlag aLeftTop = QtE.AlignmentFlag.AlignTop+QtE.AlignmentFlag.AlignLeft;
 		QtE.AlignmentFlag aCenterTop = QtE.AlignmentFlag.AlignTop+QtE.AlignmentFlag.AlignHCenter;
@@ -335,36 +374,39 @@ class ContactEdit : QDialog {
 		setLayout(gLay);
 		
 	}
+	void noteChanged(){
+		this.noteModified = true; 
+	}
+
+	void sexChanged(){
+		this.sexModified = true; 
+	}
+	
 	void okButtonClick(){
-//		writeln(noteEdit.document.isModified);
-//		noteEdit.setModified(false);
-		if (validDate(b_dateEdit.text!string)){
-			this.db.updateQuery(f_nameEdit.text!string,m_nameEdit.text!string,l_nameEdit.text!string,
-							sexEdit.text!string,emailEdit.text!string,b_dateEdit.text!string,m_phoneEdit.text!string,
-							noteEdit.toPlainText!string,postcodeEdit.text!string, countryEdit.text!string,
-							cityEdit.text!string, streetEdit.text!string, houseEdit.text!string, 
-							buildingEdit.text!string, apartmentEdit.text!string,this.id);
-			this.close();
-		} else{
-			QMessageBox msgBox = new QMessageBox(this);
-			msgBox.setWindowTitle("Ошибка ввода даты.");
-			msgBox.setText("Некорректная дата.");
-			msgBox.setInformativeText("Не менять дату - \"OK\" \n Отменить для ввода корректной даты -\"Отмена\" ");
-			msgBox.setStandardButtons((QMessageBox.StandardButton.Ok)| (QMessageBox.StandardButton.Cancel));
-			msgBox.setIcon(QMessageBox.Icon.Question);
-			int res = msgBox.exec();
-			if (res == QMessageBox.StandardButton.Ok ) {
-				this.db.updateQuery(f_nameEdit.text!string,m_nameEdit.text!string,l_nameEdit.text!string,
-							sexEdit.text!string,emailEdit.text!string,null,m_phoneEdit.text!string,
-							noteEdit.toPlainText!string,postcodeEdit.text!string, countryEdit.text!string,
-							cityEdit.text!string, streetEdit.text!string, houseEdit.text!string, 
-							buildingEdit.text!string, apartmentEdit.text!string,this.id);
-				this.close();
+		string[string] result;
+		foreach(elem;outData.byKey){
+			if (elem == "b_date"){
+				if (!validDate(outData[elem].text!string)){
+					QMessageBox msgBox = new QMessageBox(this);
+					msgBox.setWindowTitle("Ошибка ввода даты.");
+					msgBox.setText("Некорректная дата.");
+					msgBox.setInformativeText("Не менять дату - \"OK\" \n Отменить для ввода корректной даты -\"Отмена\" ");
+					msgBox.setStandardButtons((QMessageBox.StandardButton.Ok)| (QMessageBox.StandardButton.Cancel));
+					msgBox.setIcon(QMessageBox.Icon.Question);
+					int res = msgBox.exec();
+					if (res == QMessageBox.StandardButton.Ok ) {
+						continue;
+					} else return;
+				}
 			}
 			
+			if (outData[elem].isModified) result[elem] = outData[elem].text!string;
 		}
-						
-		
+		if (this.noteModified) result["note"] = noteEdit.toPlainText!string;
+		if (this.sexModified) result["sex"] = sexEdit.text!string;
+		result["id"] = this.id;
+		this.db.updateQuery(result);
+		this.close();
 	}
 	
 }
