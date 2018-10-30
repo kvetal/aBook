@@ -1,7 +1,15 @@
-"# aBook"
--dmd required. http://dlang.org/
--QtE5 required. https://github.com/MGWL/QtE5
--mysql-native required. https://github.com/mysql-d/mysql-native
+Проект созданный исключительно для того, что бы разобраться с QtE5 и mysql-native, и попрактиковаться.
+
+-dmd required. http://dlang.org/ <br>
+-QtE5 required. https://github.com/MGWL/QtE5 <br>
+-mysql-native required. https://github.com/mysql-d/mysql-native <br>
+
+
+mysql -u mysql_user -p -h MySQL_Host <br>
+\u mysql <br>
+CREATE USER 'test'@'host' IDENTIFIED BY 'pass'; <br>
+GRANT ALL PRIVILEGES ON storage.* to 'test'@'192.168.1.10'; <br>
+FLUSH PRIVILEGES; <br>
 
 MySQL Table create;
 CREATE TABLE `person` (
