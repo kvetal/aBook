@@ -1,1 +1,0 @@
-../../mylib/mylib.d
