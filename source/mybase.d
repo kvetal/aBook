@@ -152,7 +152,6 @@ class mydb{
 				if (elem == null) {
 					elem = "";
 				}
-			//writeln(aa);
 			}
 			
 			return aa;
@@ -168,37 +167,32 @@ class mydb{
 			data.remove("id");
 			if (data.length == 0) return;
 			string queryString = "UPDATE `"~this.table~"` SET ";
+			int l = queryString.length;
 			foreach (elem;data.byKey){
 				queryString ~= ", "~"`"~elem~"`"~"="~"\""~data[elem]~"\"" ;
 			}
-			
-			queryString = queryString[0..20]~queryString[21..$];
+			queryString = queryString[0..l]~queryString[l+1..$];
 			queryString ~=  " WHERE `id`="~id;
 			auto rowsAffected = this.conn.exec(queryString);
 			
 		}
 
 		void newRecord(string[string] data){
-			writeln(data);//
-			//"INSERT INTO `tablename` (`id`, `name`) VALUES (?,?)"
 			if (data.length == 0) return;
 			string queryString = "INSERT INTO `"~this.table~"` (";
 			int l = queryString.length;
-			
 			foreach (elem;data.byKey){
 				queryString ~= ", "~"`"~elem~"`";
 			}
 			queryString ~= ") VALUES (";
 			queryString = queryString[0..l]~queryString[l+1..$];
 			l = queryString.length;
-			
 			foreach (elem;data.byKey){
 				queryString ~= ", "~"\""~data[elem]~"\"";
 			}
 			queryString = queryString[0..l]~queryString[l+1..$];
 			queryString ~= ")";
 			writeln(queryString);
-			//queryString = queryString[0..20]~queryString[21..$];
 			auto rowsAffected = this.conn.exec(queryString);
 		}
 

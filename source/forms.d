@@ -45,7 +45,7 @@ class Form1 :QWidget {
 	mydb db;
 	private {
 		ulong tRows,tCols;
-		QVBoxLayout vLayAll; //Общь верт выравниватель
+		QVBoxLayout vLayAll; //Общ. верт выравниватель
 		QHBoxLayout hLay1,hLay2,hLay3,hLay4; //Горизонтальный выравниватель
 		QLabel Label1,Label_dbHost,Label_dbUser,Label_dbPort,Label_dbPwd,Label_dbName;
 		QPushButton Button1,Button2,Button3, newButton, delButton;
@@ -81,6 +81,11 @@ class Form1 :QWidget {
 		Button3 = new QPushButton("Редактировать",this);
 		newButton = new QPushButton("Добавить",this);
 		delButton = new QPushButton("Удалить",this);
+		Button2.setEnabled(false);
+		Button3.setEnabled(false);
+		newButton.setEnabled(false);
+		delButton.setEnabled(false);
+		
 		Table1 = new QTableWidget(this);
 		
 		LineEdit_dbPwd.setEchoMode(QLineEdit.EchoMode.Password);
@@ -96,8 +101,8 @@ class Form1 :QWidget {
 		actionExit = new QAction(this,&on_exit,aThis);
 		actionNewButton = new QAction(this,&on_newButton,aThis);
 		actionDelButton = new QAction(this,&on_delButton,aThis);
-
 		actionCellChanged = new QAction(this,&on_signal,aThis);
+		
 		connects(Table1,"currentCellChanged(int, int, int, int)",actionCellChanged,"Slot_ANIIII(int, int, int, int)");
 		connects(Button1,"clicked()",actionButton1,"Slot()");
 		connects(Button2,"clicked()",actionButton2,"Slot()");
@@ -105,7 +110,7 @@ class Form1 :QWidget {
 		connects(newButton,"clicked()",actionNewButton,"Slot()");
 		connects(delButton,"clicked()",actionDelButton,"Slot()");
 		
-		hLay1.addWidget(Button1);//.addWidget(Button2).addWidget(Button3);
+		hLay1.addWidget(Button1);
 		hLay2.addWidget(Label_dbHost).
 			  addWidget(Label_dbPort).
 			  addWidget(Label_dbUser).
@@ -117,21 +122,15 @@ class Form1 :QWidget {
 			  addWidget(LineEdit_dbPwd).
 			  addWidget(LineEdit_dbName);
 		hLay4.addWidget(Button2).addWidget(Button3).addWidget(newButton).addWidget(delButton);
-
 		vLayAll.addWidget(Label1).addLayout(hLay1).addLayout(hLay2).addLayout(hLay3).addWidget(Table1).addLayout(hLay4);
-
-		//setStyleSheet("QPushButton {color: blue; background-color: yellow}");
-
 	}
 
 	void button1Click(){
-
 		try {
-		if (db !is null) db.close();
-		db = new mydb(LineEdit_dbHost.text!string,LineEdit_dbPort.text!string,LineEdit_dbUser.text!string,LineEdit_dbPwd.text!string,LineEdit_dbName.text!string);
-		db.connect();
-		}
-		catch (Exception e)
+			if (db !is null) db.close();
+			db = new mydb(LineEdit_dbHost.text!string,LineEdit_dbPort.text!string,LineEdit_dbUser.text!string,LineEdit_dbPwd.text!string,LineEdit_dbName.text!string);
+			db.connect();
+		} catch (Exception e)
 		{
 			Label1.setText("Ошибка при подключении:"~e.msg);
 		}
@@ -139,17 +138,22 @@ class Form1 :QWidget {
 			Label1.setText("Подключено к БД");
 			fillTable1();
 			Table1.setCurrentCell(0,0);
+			Button2.setEnabled(true);
+			Button3.setEnabled(true);
+			newButton.setEnabled(true);
+			delButton.setEnabled(true);
 		}
 		else{
 			Label1.setText("Не подключено к БД");}
-		
 	}
+	
 	void button2Click(){
 		fillTable1();
 	}
+	
 	void fillTable1(){
 		if ((db !is null) && db.connected){
-			items = db.getItems("person"); //Получаем даттые из базы
+			items = db.getItems("person");
 			if (items !is null) {
 				// получаем и задаем рвзмеры таблицы
 				this.tRows = items.length;
@@ -202,8 +206,7 @@ class Form1 :QWidget {
 	}
 	
 	void cellChange(int curr_r,int curr_c, int prev_r, int prev_c){
-		//this.Table1.selectRow(curr_r);
-		//writeln(curr_r);
+		//
 	}
 
 }
@@ -228,7 +231,6 @@ extern (C){
 class ContactEdit : QDialog {
 	mydb db;
 	string id;
-	
 	private {
 		QGridLayout gLay;
 		QLineEdit f_nameEdit, m_nameEdit, l_nameEdit, b_dateEdit, emailEdit, m_phoneEdit;
@@ -274,6 +276,7 @@ class ContactEdit : QDialog {
 		buildingEdit = new QLineEdit(this);
 		apartmentEdit = new QLineEdit(this);
 			apartmentEdit.setInputMask(nummask);
+			
 		outData["f_name"] = f_nameEdit;
 		outData["m_name"] = m_nameEdit;
 		outData["l_name"] = l_nameEdit;
@@ -292,25 +295,20 @@ class ContactEdit : QDialog {
 			this.id = data["id"].toString;
 			f_nameEdit.setText(data["f_name"].toString);
 			f_nameEdit.setModified(false);
-			
 			m_nameEdit.setText(data["m_name"].toString);
 			m_nameEdit.setModified(false);
-			
 			l_nameEdit.setText(data["l_name"].toString);
 			l_nameEdit.setModified(false);
-			
 			if (validDate(data["b_date"].toString)){
 				Date dt = Date.fromSimpleString(data["b_date"].toString);
 				b_dateEdit.setText(dt.toISOExtString());
 			}
 			b_dateEdit.setModified(false);
-			
 			emailEdit.setText(data["email"].toString);
 			emailEdit.setModified(false);
-			
 			m_phoneEdit.setText(data["mobile_phone"].toString);
 			m_phoneEdit.setModified(false);
-			
+
 			if (data["sex"] == "М") sexEdit.addItem("М",1).addItem("Ж",2).addItem("-",3);
 				else if (data["sex"] == "Ж") sexEdit.addItem("Ж",2).addItem("М",1).addItem("-",3); 
 					 else sexEdit.addItem("-",3).addItem("Ж",2).addItem("М",1);
@@ -340,7 +338,6 @@ class ContactEdit : QDialog {
 			if (data["apartment"].toString == "") apartmentEdit.setText("0");
 			apartmentEdit.setModified(false);
 		}
-		
 		okButton = new QPushButton("OK");
 		cancelButton = new QPushButton("Отмена");
 		lFName = new QLabel(this);
@@ -403,8 +400,8 @@ class ContactEdit : QDialog {
 			.addWidget(noteEdit,11,0,1,6,aAxpand)
 			.addWidget(okButton,12,4,aRightTop).addWidget(cancelButton,12,5,aRightTop);
 		setLayout(gLay);
-		
 	}
+
 	void noteChanged(){
 		this.noteModified = true; 
 	}
@@ -462,7 +459,6 @@ class ContactEdit : QDialog {
 		}
 		if (this.noteModified) result["note"] = noteEdit.toPlainText!string;
 		if (this.sexModified) result["sex"] = sexEdit.text!string;
-//		result["id"] = this.id;
 		this.db.newRecord(result);
 		this.close();
 	}
