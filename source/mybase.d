@@ -74,7 +74,6 @@ class mydb{
 				this.conn = new Connection(connStr);
 			}catch (Exception e){
 				this._connected = false;
-				writeln(e.msg);
 				return false;
 				}
 			this._connected = true;
@@ -146,7 +145,6 @@ class mydb{
 			this.table = table;
 			this.range = this.conn.query("SELECT * FROM "~"`"~this.table~"` WHERE `id`="~to!string(id));
 			auto aa = range.asAA;
-			//writeln(aa);
 			foreach(ref elem;aa){
 				
 				if (elem == null) {
@@ -192,15 +190,12 @@ class mydb{
 			}
 			queryString = queryString[0..l]~queryString[l+1..$];
 			queryString ~= ")";
-			writeln(queryString);
 			auto rowsAffected = this.conn.exec(queryString);
 		}
 
 		void delRecord(int id){
 			string queryString = "DELETE FROM `"~this.table~"` WHERE `id`=";
 			queryString ~= to!string(id);
-			writeln(queryString);
-			writeln(id);
 			auto rowsAffected = this.conn.exec(queryString);
 		}
 	}

@@ -18,7 +18,6 @@ int main(string[] args)
 	app.exec();
 	scope(exit){
 			if ((f1.db !is null) && f1.db.connected) f1.db.close();
-	//spawnProcess("cmd.exe");
 	}
 	return 0;
 }
