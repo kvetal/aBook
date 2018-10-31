@@ -158,26 +158,12 @@ class mydb{
 			return aa;
 		}
 
-		//----------------На удаление-----------------
-		auto updateQuery(string s2,string s3,string s4,string s5,string s6,string s7,string s8,string s9,string s10,
-								string s11,string s12,string s13,string s14,string s15,string s16,string s17){
-			Prepared prepared;
-			if (s7 !is null){
-				prepared = this.conn.prepare("UPDATE `"~this.table~"` SET `f_name`=?, `m_name`=?, `l_name`=?,`sex`=?, `email`=?, `b_date`=?, `mobile_phone`=?,`note`=?,`postcode`=?,`country`=?,`city`=?,`street`=?,`house`=?,`building`=?,`apartment`=? WHERE `id`=?");
-				prepared.setArgs(s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15,s16,s17);
-			}else{
-				prepared = this.conn.prepare("UPDATE `"~this.table~"` SET `f_name`=?, `m_name`=?, `l_name`=?,`sex`=?, `email`=?, `mobile_phone`=?,`note`=?,`postcode`=?,`country`=?,`city`=?,`street`=?,`house`=?,`building`=?,`apartment`=? WHERE `id`=?");
-				prepared.setArgs(s2,s3,s4,s5,s6,s8,s9,s10,s11,s12,s13,s14,s15,s16,s17);
-			}
-			auto rowsAffected = this.conn.exec(prepared);
-			return rowsAffected;
-			}
-		
 		void close(){
 			if (this._connected == true)
 				this.conn.close;
 			}
-		void updateQuery(string[string] data){
+			
+		void updateRecord(string[string] data){
 			auto id = data["id"];
 			data.remove("id");
 			if (data.length == 0) return;
@@ -190,6 +176,38 @@ class mydb{
 			queryString ~=  " WHERE `id`="~id;
 			auto rowsAffected = this.conn.exec(queryString);
 			
+		}
+
+		void newRecord(string[string] data){
+			writeln(data);//
+			//"INSERT INTO `tablename` (`id`, `name`) VALUES (?,?)"
+			if (data.length == 0) return;
+			string queryString = "INSERT INTO `"~this.table~"` (";
+			int l = queryString.length;
+			
+			foreach (elem;data.byKey){
+				queryString ~= ", "~"`"~elem~"`";
+			}
+			queryString ~= ") VALUES (";
+			queryString = queryString[0..l]~queryString[l+1..$];
+			l = queryString.length;
+			
+			foreach (elem;data.byKey){
+				queryString ~= ", "~"\""~data[elem]~"\"";
+			}
+			queryString = queryString[0..l]~queryString[l+1..$];
+			queryString ~= ")";
+			writeln(queryString);
+			//queryString = queryString[0..20]~queryString[21..$];
+			auto rowsAffected = this.conn.exec(queryString);
+		}
+
+		void delRecord(int id){
+			string queryString = "DELETE FROM `"~this.table~"` WHERE `id`=";
+			queryString ~= to!string(id);
+			writeln(queryString);
+			writeln(id);
+			auto rowsAffected = this.conn.exec(queryString);
 		}
 	}
 

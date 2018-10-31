@@ -26,6 +26,14 @@ extern (C) {
 		(*h).cellChange(curr_r,curr_c,prev_r,prev_c);
 	}
 	
+	void on_newButton(Form1* h){
+		(*h).newButtonClick();
+	}
+
+	void on_delButton(Form1* h){
+		(*h).delButtonClick();
+	}
+	
 	void on_exit(Form1* h){
 		(*h).close();
 	}
@@ -38,10 +46,10 @@ class Form1 :QWidget {
 	private {
 		ulong tRows,tCols;
 		QVBoxLayout vLayAll; //Общь верт выравниватель
-		QHBoxLayout hLay1,hLay2,hLay3; //Горизонтальный выравниватель
+		QHBoxLayout hLay1,hLay2,hLay3,hLay4; //Горизонтальный выравниватель
 		QLabel Label1,Label_dbHost,Label_dbUser,Label_dbPort,Label_dbPwd,Label_dbName;
-		QPushButton Button1,Button2,Button3;
-		QAction actionButton1,actionButton3,actionButton2;
+		QPushButton Button1,Button2,Button3, newButton, delButton;
+		QAction actionButton1,actionButton3,actionButton2,actionNewButton, actionDelButton;
 		QAction actionCellChanged,actionExit;
 		QTableWidget Table1;
 		QTableWidgetItem[][] items;
@@ -56,6 +64,7 @@ class Form1 :QWidget {
 		hLay1 = new QHBoxLayout(null);
 		hLay2 = new QHBoxLayout(null);
 		hLay3 = new QHBoxLayout(null);
+		hLay4 = new QHBoxLayout(null);
 		LineEdit_dbHost = new QLineEdit(this);
 		LineEdit_dbUser = new QLineEdit(this);
 		LineEdit_dbPort = new QLineEdit(this);
@@ -70,6 +79,8 @@ class Form1 :QWidget {
 		Button1 = new QPushButton("подключится к базе данных",this);
 		Button2 = new QPushButton("Обновить",this);
 		Button3 = new QPushButton("Редактировать",this);
+		newButton = new QPushButton("Добавить",this);
+		delButton = new QPushButton("Удалить",this);
 		Table1 = new QTableWidget(this);
 		
 		LineEdit_dbPwd.setEchoMode(QLineEdit.EchoMode.Password);
@@ -83,15 +94,18 @@ class Form1 :QWidget {
 		actionButton3 = new QAction(this,&on_actionButton3,aThis);
 		actionButton2 = new QAction(this,&on_actionButton2,aThis);
 		actionExit = new QAction(this,&on_exit,aThis);
+		actionNewButton = new QAction(this,&on_newButton,aThis);
+		actionDelButton = new QAction(this,&on_delButton,aThis);
 
 		actionCellChanged = new QAction(this,&on_signal,aThis);
 		connects(Table1,"currentCellChanged(int, int, int, int)",actionCellChanged,"Slot_ANIIII(int, int, int, int)");
-
 		connects(Button1,"clicked()",actionButton1,"Slot()");
 		connects(Button2,"clicked()",actionButton2,"Slot()");
 		connects(Button3,"clicked()",actionButton3,"Slot()");
-
-		hLay1.addWidget(Button1).addWidget(Button2).addWidget(Button3);
+		connects(newButton,"clicked()",actionNewButton,"Slot()");
+		connects(delButton,"clicked()",actionDelButton,"Slot()");
+		
+		hLay1.addWidget(Button1);//.addWidget(Button2).addWidget(Button3);
 		hLay2.addWidget(Label_dbHost).
 			  addWidget(Label_dbPort).
 			  addWidget(Label_dbUser).
@@ -102,8 +116,9 @@ class Form1 :QWidget {
 			  addWidget(LineEdit_dbUser).
 			  addWidget(LineEdit_dbPwd).
 			  addWidget(LineEdit_dbName);
+		hLay4.addWidget(Button2).addWidget(Button3).addWidget(newButton).addWidget(delButton);
 
-		vLayAll.addWidget(Label1).addLayout(hLay1).addLayout(hLay2).addLayout(hLay3).addWidget(Table1);
+		vLayAll.addWidget(Label1).addLayout(hLay1).addLayout(hLay2).addLayout(hLay3).addWidget(Table1).addLayout(hLay4);
 
 		//setStyleSheet("QPushButton {color: blue; background-color: yellow}");
 
@@ -171,7 +186,21 @@ class Form1 :QWidget {
 			fillTable1();
 			}
 		}
-			
+
+	void newButtonClick(){
+		if ((db !is null) && db.connected){
+			ContactEdit cc = new ContactEdit(this,QtE.WindowType.Dialog,null,this.db);
+			cc.saveThis(&cc);
+			cc.exec();
+			fillTable1();
+			}
+	}
+
+	void delButtonClick(){
+		this.db.delRecord(Table1.item(Table1.currentRow,0).text!int);
+		fillTable1();
+	}
+	
 	void cellChange(int curr_r,int curr_c, int prev_r, int prev_c){
 		//this.Table1.selectRow(curr_r);
 		//writeln(curr_r);
@@ -216,98 +245,101 @@ class ContactEdit : QDialog {
 	}
 	this(QWidget parent, QtE.WindowType fl, Variant[string] data, mydb db){
 		this.db = db;
-		this.id = data["id"].toString;
 		super(parent,fl);
 		this.resize(700,600);
 		setWindowTitle("Редактирование записи.");
 		gLay = new QGridLayout(this);
 		f_nameEdit = new QLineEdit(this);
-		f_nameEdit.setText(data["f_name"].toString);
-		f_nameEdit.setModified(false);
-		outData["f_name"] = f_nameEdit;
-		
 		m_nameEdit = new QLineEdit(this);
-		m_nameEdit.setText(data["m_name"].toString);
-		m_nameEdit.setModified(false);
-		outData["m_name"] = m_nameEdit;
-		
 		l_nameEdit = new QLineEdit(this);
-		l_nameEdit.setText(data["l_name"].toString);
-		l_nameEdit.setModified(false);
-		outData["l_name"] = l_nameEdit;
-		
 		b_dateEdit = new QLineEdit(this);
-		QString datemask =  new QString("0000-00-00");
-		b_dateEdit.setInputMask(datemask);
-		if (validDate(data["b_date"].toString)){
-			Date dt = Date.fromSimpleString(data["b_date"].toString);
-			b_dateEdit.setText(dt.toISOExtString());
-		}
-		b_dateEdit.setModified(false);
-		outData["b_date"] = b_dateEdit;
-
+			QString datemask =  new QString("0000-00-00");
+			b_dateEdit.setInputMask(datemask);
 		emailEdit = new QLineEdit(this);
-		emailEdit.setText(data["email"].toString);
-		emailEdit.setModified(false);
-		outData["email"] = emailEdit;
-		
 		m_phoneEdit = new QLineEdit(this);
-		QString phonemask =  new QString("+0-000-000-00-00");
-		m_phoneEdit.setInputMask(phonemask);
-		m_phoneEdit.setText(data["mobile_phone"].toString);
-		m_phoneEdit.setModified(false);
-		outData["mobile_phone"] = m_phoneEdit;
-		
-		
+			QString phonemask =  new QString("+0-000-000-00-00");
+			m_phoneEdit.setInputMask(phonemask);
 		sexEdit = new QComboBox(this);
-		if (data["sex"] == "М") sexEdit.addItem("М",1).addItem("Ж",2).addItem("-",3);
-			else if (data["sex"] == "Ж") sexEdit.addItem("Ж",2).addItem("М",1).addItem("-",3); 
-				 else sexEdit.addItem("-",3).addItem("Ж",2).addItem("М",1);
-		
+		if (data is null) sexEdit.addItem("-",3).addItem("Ж",2).addItem("М",1);
 		noteEdit = new QPlainTextEdit(this);
-		noteEdit.appendPlainText(data["note"]);
-
 		postcodeEdit = new QLineEdit(this);
-		QString pcodemask =  new QString("0000000000");
-		postcodeEdit.setInputMask(pcodemask);
-		postcodeEdit.setText(data["postcode"].toString);
-		postcodeEdit.setModified(false);
-		outData["postcode"] = postcodeEdit;
-		
+			QString pcodemask =  new QString("0000000000");
+			postcodeEdit.setInputMask(pcodemask);
 		countryEdit= new QLineEdit(this);
-		countryEdit.setText(data["country"].toString);
-		countryEdit.setModified(false);
-		outData["country"] = countryEdit;
-		
 		cityEdit = new QLineEdit(this);
-		cityEdit.setText(data["city"].toString);
-		cityEdit.setModified(false);
-		outData["city"] = cityEdit;
-		
 		streetEdit = new QLineEdit(this);
-		streetEdit.setText(data["street"].toString);
-		streetEdit.setModified(false);
-		outData["street"] = streetEdit;
-		
 		houseEdit = new QLineEdit(this);
-		QString nummask =  new QString("00000");
-		houseEdit.setInputMask(nummask);
-		houseEdit.setText(data["house"].toString);
-		if (data["house"].toString == "") houseEdit.setText("0");
-		houseEdit.setModified(false);
-		outData["house"] = houseEdit;
-		
+			QString nummask =  new QString("00000");
+			houseEdit.setInputMask(nummask);
 		buildingEdit = new QLineEdit(this);
-		buildingEdit.setText(data["building"].toString);
-		buildingEdit.setModified(false);
-		outData["building"] = buildingEdit;
-		
 		apartmentEdit = new QLineEdit(this);
-		apartmentEdit.setInputMask(nummask);
-		apartmentEdit.setText(data["apartment"].toString);
-		if (data["apartment"].toString == "") apartmentEdit.setText("0");
-		apartmentEdit.setModified(false);
+			apartmentEdit.setInputMask(nummask);
+		outData["f_name"] = f_nameEdit;
+		outData["m_name"] = m_nameEdit;
+		outData["l_name"] = l_nameEdit;
+		outData["b_date"] = b_dateEdit;
+		outData["email"] = emailEdit;
+		outData["mobile_phone"] = m_phoneEdit;
+		outData["postcode"] = postcodeEdit;
+		outData["country"] = countryEdit;
+		outData["city"] = cityEdit;
+		outData["street"] = streetEdit;
+		outData["house"] = houseEdit;
+		outData["building"] = buildingEdit;
 		outData["apartment"] = apartmentEdit;
+		
+		if (data !is null){
+			this.id = data["id"].toString;
+			f_nameEdit.setText(data["f_name"].toString);
+			f_nameEdit.setModified(false);
+			
+			m_nameEdit.setText(data["m_name"].toString);
+			m_nameEdit.setModified(false);
+			
+			l_nameEdit.setText(data["l_name"].toString);
+			l_nameEdit.setModified(false);
+			
+			if (validDate(data["b_date"].toString)){
+				Date dt = Date.fromSimpleString(data["b_date"].toString);
+				b_dateEdit.setText(dt.toISOExtString());
+			}
+			b_dateEdit.setModified(false);
+			
+			emailEdit.setText(data["email"].toString);
+			emailEdit.setModified(false);
+			
+			m_phoneEdit.setText(data["mobile_phone"].toString);
+			m_phoneEdit.setModified(false);
+			
+			if (data["sex"] == "М") sexEdit.addItem("М",1).addItem("Ж",2).addItem("-",3);
+				else if (data["sex"] == "Ж") sexEdit.addItem("Ж",2).addItem("М",1).addItem("-",3); 
+					 else sexEdit.addItem("-",3).addItem("Ж",2).addItem("М",1);
+		
+			noteEdit.appendPlainText(data["note"]);
+
+			postcodeEdit.setText(data["postcode"].toString);
+			postcodeEdit.setModified(false);
+			
+			countryEdit.setText(data["country"].toString);
+			countryEdit.setModified(false);
+			
+			cityEdit.setText(data["city"].toString);
+			cityEdit.setModified(false);
+			
+			streetEdit.setText(data["street"].toString);
+			streetEdit.setModified(false);
+			
+			houseEdit.setText(data["house"].toString);
+			if (data["house"].toString == "") houseEdit.setText("0");
+			houseEdit.setModified(false);
+			
+			buildingEdit.setText(data["building"].toString);
+			buildingEdit.setModified(false);
+			
+			apartmentEdit.setText(data["apartment"].toString);
+			if (data["apartment"].toString == "") apartmentEdit.setText("0");
+			apartmentEdit.setModified(false);
+		}
 		
 		okButton = new QPushButton("OK");
 		cancelButton = new QPushButton("Отмена");
@@ -342,7 +374,6 @@ class ContactEdit : QDialog {
 		lApartment = new QLabel(this);
 		lApartment.setText("Квартира");
 		
-
 		actionCancel = new QAction(this,&on_cancelButton1,aThis);
 		actionNoteChanged = new QAction(this,&on_noteChanged,aThis);
 		actionSexChanged = new QAction(this,&on_sexChanged,aThis);
@@ -381,8 +412,8 @@ class ContactEdit : QDialog {
 	void sexChanged(){
 		this.sexModified = true; 
 	}
-	
-	void okButtonClick(){
+
+	void editRecord(){
 		string[string] result;
 		foreach(elem;outData.byKey){
 			if (elem == "b_date"){
@@ -405,8 +436,44 @@ class ContactEdit : QDialog {
 		if (this.noteModified) result["note"] = noteEdit.toPlainText!string;
 		if (this.sexModified) result["sex"] = sexEdit.text!string;
 		result["id"] = this.id;
-		this.db.updateQuery(result);
+		this.db.updateRecord(result);
 		this.close();
+	}
+
+	void newRecord(){
+		string[string] result;
+		foreach(elem;outData.byKey){
+			if (elem == "b_date"){
+				if (!validDate(outData[elem].text!string)){
+					QMessageBox msgBox = new QMessageBox(this);
+					msgBox.setWindowTitle("Ошибка ввода даты.");
+					msgBox.setText("Некорректная дата.");
+					msgBox.setInformativeText("Не менять дату - \"OK\" \n Отменить для ввода корректной даты -\"Отмена\" ");
+					msgBox.setStandardButtons((QMessageBox.StandardButton.Ok)| (QMessageBox.StandardButton.Cancel));
+					msgBox.setIcon(QMessageBox.Icon.Question);
+					int res = msgBox.exec();
+					if (res == QMessageBox.StandardButton.Ok ) {
+						continue;
+					} else return;
+				}
+			}
+			
+			if (outData[elem].isModified) result[elem] = outData[elem].text!string;
+		}
+		if (this.noteModified) result["note"] = noteEdit.toPlainText!string;
+		if (this.sexModified) result["sex"] = sexEdit.text!string;
+//		result["id"] = this.id;
+		this.db.newRecord(result);
+		this.close();
+	}
+	
+	void okButtonClick(){
+		if (id !is null){
+			this.editRecord();
+		} else {
+			this.newRecord();
+		}
+		
 	}
 	
 }
