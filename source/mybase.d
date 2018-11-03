@@ -165,7 +165,7 @@ class mydb{
 			data.remove("id");
 			if (data.length == 0) return;
 			string queryString = "UPDATE `"~this.table~"` SET ";
-			int l = queryString.length;
+			auto l = queryString.length;
 			foreach (elem;data.byKey){
 				queryString ~= ", "~"`"~elem~"`"~"="~"\""~data[elem]~"\"" ;
 			}
@@ -178,7 +178,7 @@ class mydb{
 		void newRecord(string[string] data){
 			if (data.length == 0) return;
 			string queryString = "INSERT INTO `"~this.table~"` (";
-			int l = queryString.length;
+			auto l = queryString.length;
 			foreach (elem;data.byKey){
 				queryString ~= ", "~"`"~elem~"`";
 			}

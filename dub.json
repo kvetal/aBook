@@ -5,7 +5,6 @@
 	],
 	"dependencies": {
 		"mysql-native": "~>2.2.2",
-		"qte5": "~>0.0.7",
 		
 	},
 	"description": "deccription",
