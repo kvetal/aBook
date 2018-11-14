@@ -5,6 +5,7 @@ module mylib;
 import std.conv;
 import std.string;
 import std.datetime;
+import std.traits : isIntegral, isFloatingPoint, Unqual;
 
 bool validDate(int year, int month,int day )
 {
@@ -15,6 +16,7 @@ bool validDate(int year, int month,int day )
 	return true;
 }
 
+//Проверка корректности даты
 bool validDate(string _date )
 {
 	string[string] monthAA =["jan":"01","feb":"02","mar":"03","apr":"04","may":"05","jun":"06",
@@ -35,7 +37,12 @@ bool validDate(string _date )
 		return false;
 }
 
-
+//Проверка на типа на принадлежность к числовому
+template isNumberType(T)
+{
+		enum bool isNumberType = isIntegral!(Unqual!T) || isFloatingPoint!(Unqual!T);
+}
+ 
 unittest {
 	assert(validDate("2020-02-29"));
 	assert(validDate("2018-Apr-03"));
