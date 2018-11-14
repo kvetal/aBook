@@ -16,7 +16,7 @@ bool validDate(int year, int month,int day )
 	return true;
 }
 
-//Проверка корректности даты
+//РџСЂРѕРІРІРµСЂРєР° РєРѕСЂСЂРµРєС‚РЅРѕСЃС‚Рё РґР°С‚С‹
 bool validDate(string _date )
 {
 	string[string] monthAA =["jan":"01","feb":"02","mar":"03","apr":"04","may":"05","jun":"06",
@@ -37,7 +37,7 @@ bool validDate(string _date )
 		return false;
 }
 
-//Проверка на типа на принадлежность к числовому
+//РџСЂРѕРІРµСЂРєР° С‚РёРїР° РЅР° РїСЂРёРЅР°РґР»РµР¶РЅРѕСЃС‚СЊ Рє С‡РёСЃР»РѕРІС‹Рј
 template isNumberType(T)
 {
 		enum bool isNumberType = isIntegral!(Unqual!T) || isFloatingPoint!(Unqual!T);
