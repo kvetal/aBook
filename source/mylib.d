@@ -6,6 +6,8 @@ import std.conv;
 import std.string;
 import std.datetime;
 import std.traits : isIntegral, isFloatingPoint, Unqual;
+import std.meta : allSatisfy;
+import std.range : zip;
 
 bool validDate(int year, int month,int day )
 {
@@ -37,12 +39,24 @@ bool validDate(string _date )
 		return false;
 }
 
-//Проверка типа на принадлежность к числовым
+/*
+Код шаблонов template isNumberType(T) template allArithmetic(T...)
+взят с сайта http://lhs-blog.info/programming/dlang/proverka-lyubogo-tipa-na-prinadlezhnost-k-chislovyim/
+За что автору данного кода большое спасибо
+Проверка типа на принадлежность к числовым
+*/
 template isNumberType(T)
 {
 		enum bool isNumberType = isIntegral!(Unqual!T) || isFloatingPoint!(Unqual!T);
 }
  
+//Проверка набота типов на принадлежность к числовым.
+template allArithmetic(T...)
+if (T.length >= 1)
+{
+	enum bool allArithmetic = allSatisfy!(isNumberType, T);
+}
+
 unittest {
 	assert(validDate("2020-02-29"));
 	assert(validDate("2018-Apr-03"));
