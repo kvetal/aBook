@@ -29,7 +29,6 @@ class mydb{
 		this._connected = false;
 		this.table_header = ["f_name":"Имя","l_name":"Фамилия","m_name":"Отчество","b_date":"День рождения","sex":"Пол","email":"е-почта","mobile_phone":"Моб. телефон","note":"Заметки","postcode":"Индекс","country":"Страна","city":"Город","street":"Улица","house":"Дом","building":"строение","apartment":"Квартира"];
 	}
-	
 	//Конструктор сразу с подключением в БД
 	this(string host,string port,string user,string password,string dbname){
 		this();
@@ -48,22 +47,22 @@ class mydb{
 	}
 	
 		//setters
-		@property host(string value) { this._host = value;}
-		@property port(string value) {this._port = value;}
-		@property user(string value) {this._user = value;}
-		@property password(string value) {this._password = value;}
-		@property dbname(string value) {this._dbname = value;}
-		@property table(string value) {this._table = value;}
+		@property host(string value) { _host = value;}
+		@property port(string value) { _port = value;}
+		@property user(string value) { _user = value;}
+		@property password(string value) { _password = value;}
+		@property dbname(string value) { _dbname = value;}
+		@property table(string value) { _table = value;}
 
 		//getters
 		@property {
-			string host() { return this._host;}
-			string port() { return this._port;}
-			string user() { return this._user;}
-			string password() { return this._password;}
-			string dbname() { return this._dbname;}
-			string table() {return this._table;}
-			bool connected() {return this._connected;};
+			string host() { return _host;}
+			string port() { return _port;}
+			string user() { return _user;}
+			string password() { return _password;}
+			string dbname() { return _dbname;}
+			string table() {return _table;}
+			bool connected() {return _connected;};
 		}
 
 		//Конект с параметрами определенными в классе

@@ -56,8 +56,8 @@ class Form1 :QWidget {
 		QTableWidgetItem[] cols_header;
 		QLineEdit LineEdit_dbHost,LineEdit_dbUser,LineEdit_dbPort,LineEdit_dbPwd,LineEdit_dbName;
 	}
-	this (){
-		super(this);
+	this (QWidget parent, WindowType windowType){
+		super(parent, windowType);
 		this.resize(900,500);
 		setWindowTitle("Адресная книга");
 		vLayAll = new QVBoxLayout(this);
@@ -123,6 +123,9 @@ class Form1 :QWidget {
 			  addWidget(LineEdit_dbName);
 		hLay4.addWidget(Button2).addWidget(Button3).addWidget(newButton).addWidget(delButton);
 		vLayAll.addWidget(Label1).addLayout(hLay1).addLayout(hLay2).addLayout(hLay3).addWidget(Table1).addLayout(hLay4);
+	}
+	~this(){
+		if ((db !is null) && db.connected) db.close();
 	}
 
 	void button1Click(){
