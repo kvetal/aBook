@@ -18,12 +18,11 @@ class mydb{
 	string _table;
 	string connStr;
 	bool _connected;
-	ResultRange range;
 	QTableWidgetItem[][] table_items;
 	string[string] table_header;
-	}
+	ResultRange range;
 	Connection conn;
-
+	}
 	//Конструктор по умолчанию
 	this(){
 		this._connected = false;
@@ -45,7 +44,6 @@ class mydb{
 			this._connected = false;
 			}
 	}
-	
 		//setters
 		@property host(string value) { _host = value;}
 		@property port(string value) { _port = value;}
@@ -80,29 +78,29 @@ class mydb{
 		}
 		//Коннект с параметрами определенными при вызове метода
 		bool connect(string host,string port,string user,string password,string dbname){
-			this.host = host;
-			this.port = port;
-			this.user = user;
-			this.password = password;
-			this.dbname = dbname;
-			this.connStr = "host="~host~";port="~port~";user="~user~";pwd="~password~";db="~dbname;
+			host = host;
+			port = port;
+			user = user;
+			password = password;
+			dbname = dbname;
+			connStr = "host="~host~";port="~port~";user="~user~";pwd="~password~";db="~dbname;
 			try {
-				this.conn = new Connection(connStr);
+				conn = new Connection(connStr);
 			}catch (Exception e){
-				this._connected = false;
+				_connected = false;
 				return false;
 				}
-			this._connected = true;
+			_connected = true;
 			return true;
 			}
 
 		void disconnect(){
-			this.conn.close();
+			conn.close();
 			}
 
 		const (string)[] colNames(){
 			const (string)[] result;
-			foreach (elem; this.range.colNames){
+			foreach (elem; range.colNames){
 				if ((elem in table_header) !is null) {
 					result ~= table_header[elem];
 				}else {
@@ -115,34 +113,34 @@ class mydb{
 
 		//Возвращает массив QTableWidgetItem[][] либо null при неудаче
 		QTableWidgetItem[][] getItems(string table_name){
-			this.table = table_name;
-			this.range = this.conn.query("SELECT * FROM "~"`"~this.table~"`");
-			this.table_items = null;
+			table = table_name;
+			range = conn.query("SELECT * FROM "~"`"~table~"`");
+			table_items = null;
 
-			if (!this.range.empty){
+			if (!range.empty){
 				for(auto i = 0;!range.empty;i++){
-					this.table_items ~= new QTableWidgetItem[][1];
-					auto row = this.range.front();
-					this.table_items[i] = new QTableWidgetItem[row.length];
+					table_items ~= new QTableWidgetItem[][1];
+					auto row = range.front();
+					table_items[i] = new QTableWidgetItem[row.length];
 					for(auto j = 0;j<=row.length-1;j++){
-						this.table_items[i][j] = new QTableWidgetItem(1);
+						table_items[i][j] = new QTableWidgetItem(1);
 							if (!row.isNull(j)){
-								this.table_items[i][j].setText(row[j]);
+								table_items[i][j].setText(row[j]);
 							}else {
-								this.table_items[i][j].setText("");
+								table_items[i][j].setText("");
 							}
 					}
-					this.range.popFront();
+					range.popFront();
 				}
-			return this.table_items;
+			return table_items;
 			}
 			return null;
 		}
 
 		Variant[string] getRow(int id,string table){
 			
-			this.table = table;
-			this.range = this.conn.query("SELECT * FROM "~"`"~this.table~"` WHERE `id`="~to!string(id));
+			table = table;
+			range = conn.query("SELECT * FROM "~"`"~table~"` WHERE `id`="~to!string(id));
 			auto aa = range.asAA;
 			foreach(ref elem;aa){
 				
@@ -155,28 +153,28 @@ class mydb{
 		}
 
 		void close(){
-			if (this._connected == true)
-				this.conn.close;
+			if (_connected == true)
+				conn.close;
 			}
 			
 		void updateRecord(string[string] data){
 			auto id = data["id"];
 			data.remove("id");
 			if (data.length == 0) return;
-			string queryString = "UPDATE `"~this.table~"` SET ";
+			string queryString = "UPDATE `"~table~"` SET ";
 			auto l = queryString.length;
 			foreach (elem;data.byKey){
 				queryString ~= ", "~"`"~elem~"`"~"="~"\""~data[elem]~"\"" ;
 			}
 			queryString = queryString[0..l]~queryString[l+1..$];
 			queryString ~=  " WHERE `id`="~id;
-			auto rowsAffected = this.conn.exec(queryString);
+			auto rowsAffected = conn.exec(queryString);
 			
 		}
 
 		void newRecord(string[string] data){
 			if (data.length == 0) return;
-			string queryString = "INSERT INTO `"~this.table~"` (";
+			string queryString = "INSERT INTO `"~table~"` (";
 			auto l = queryString.length;
 			foreach (elem;data.byKey){
 				queryString ~= ", "~"`"~elem~"`";
@@ -189,13 +187,13 @@ class mydb{
 			}
 			queryString = queryString[0..l]~queryString[l+1..$];
 			queryString ~= ")";
-			auto rowsAffected = this.conn.exec(queryString);
+			auto rowsAffected = conn.exec(queryString);
 		}
 
 		void delRecord(int id){
-			string queryString = "DELETE FROM `"~this.table~"` WHERE `id`=";
+			string queryString = "DELETE FROM `"~table~"` WHERE `id`=";
 			queryString ~= to!string(id);
-			auto rowsAffected = this.conn.exec(queryString);
+			auto rowsAffected = conn.exec(queryString);
 		}
 	}
 

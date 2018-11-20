@@ -35,11 +35,10 @@ extern (C) {
 	}
 	
 	void on_exit(Form1* h){
-		(*h).close();
+		(*h).fExit;
 	}
 
 }
-
 
 class Form1 :QWidget {
 	mydb db;
@@ -85,7 +84,7 @@ class Form1 :QWidget {
 		Button3.setEnabled(false);
 		newButton.setEnabled(false);
 		delButton.setEnabled(false);
-		
+
 		Table1 = new QTableWidget(this);
 		
 		LineEdit_dbPwd.setEchoMode(QLineEdit.EchoMode.Password);
@@ -98,7 +97,6 @@ class Form1 :QWidget {
 		actionButton1 = new QAction(this,&on_actionButton1,aThis);
 		actionButton3 = new QAction(this,&on_actionButton3,aThis);
 		actionButton2 = new QAction(this,&on_actionButton2,aThis);
-		actionExit = new QAction(this,&on_exit,aThis);
 		actionNewButton = new QAction(this,&on_newButton,aThis);
 		actionDelButton = new QAction(this,&on_delButton,aThis);
 		actionCellChanged = new QAction(this,&on_signal,aThis);
@@ -123,16 +121,15 @@ class Form1 :QWidget {
 			  addWidget(LineEdit_dbName);
 		hLay4.addWidget(Button2).addWidget(Button3).addWidget(newButton).addWidget(delButton);
 		vLayAll.addWidget(Label1).addLayout(hLay1).addLayout(hLay2).addLayout(hLay3).addWidget(Table1).addLayout(hLay4);
-	}
-	~this(){
-		if ((db !is null) && db.connected) db.close();
+		this.setCloseEvent(&on_exit,aThis);
 	}
 
+		
 	void button1Click(){
 		try {
 			if (db !is null) db.close();
-			db = new mydb(LineEdit_dbHost.text!string,LineEdit_dbPort.text!string,LineEdit_dbUser.text!string,LineEdit_dbPwd.text!string,LineEdit_dbName.text!string);
-			db.connect();
+			db = new mydb;
+			db.connect(LineEdit_dbHost.text!string,LineEdit_dbPort.text!string,LineEdit_dbUser.text!string,LineEdit_dbPwd.text!string,LineEdit_dbName.text!string);
 		} catch (Exception e)
 		{
 			Label1.setText("Ошибка при подключении:"~e.msg);
@@ -147,7 +144,8 @@ class Form1 :QWidget {
 			delButton.setEnabled(true);
 		}
 		else{
-			Label1.setText("Не подключено к БД");}
+			Label1.setText("Не подключено к БД");
+		}
 	}
 	
 	void button2Click(){
@@ -166,10 +164,13 @@ class Form1 :QWidget {
 				if (cols_header is null){
 					auto tmp_colNames = db.colNames; //Получаем имена Столбцов
 					for (auto i = 0; i<=(tCols-1);i++){
-						this.cols_header ~= new QTableWidgetItem(i).setText(tmp_colNames[i]);
+						cols_header ~= new QTableWidgetItem(i).setText(tmp_colNames[i]);
 					}
+					foreach (e;cols_header){
+						e.setNoDelete(true);
+						}
 					for (auto i = 0; i<=(tCols-1);i++){
-						Table1.setHorizontalHeaderItem(i,this.cols_header[i]);
+						Table1.setHorizontalHeaderItem(i,cols_header[i]);
 					}
 				}
 				//Присваеваем ячейкам таблицы итемы. 
@@ -212,6 +213,13 @@ class Form1 :QWidget {
 		//
 	}
 
+	void fExit(){
+		if ((db !is null) && db.connected) 
+		{
+			db.close();
+		}
+	}
+
 }
 
 extern (C){
@@ -229,7 +237,6 @@ extern (C){
 		(*h).sexChanged();
 	}
 }
-
 
 class ContactEdit : QDialog {
 	mydb db;
