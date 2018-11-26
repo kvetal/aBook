@@ -1,5 +1,5 @@
 /*
-version 0.0.1
+version 0.0.4
  */
 module mylib;
 import std.conv;
@@ -7,7 +7,7 @@ import std.string;
 import std.datetime;
 import std.traits : isIntegral, isFloatingPoint, Unqual;
 import std.meta : allSatisfy;
-import std.range : zip;
+import std.range;
 
 bool validDate(int year, int month,int day )
 {
@@ -18,7 +18,10 @@ bool validDate(int year, int month,int day )
 	return true;
 }
 
-//Провверка корректности даты
+/*
+Провверка корректности даты
+Date validation check
+*/
 bool validDate(string _date )
 {
 	string[string] monthAA =["jan":"01","feb":"02","mar":"03","apr":"04","may":"05","jun":"06",
@@ -44,6 +47,11 @@ bool validDate(string _date )
 взят с сайта http://lhs-blog.info/programming/dlang/proverka-lyubogo-tipa-na-prinadlezhnost-k-chislovyim/
 За что автору данного кода большое спасибо
 Проверка типа на принадлежность к числовым
+
+Template code template isNumberType (T) template allArithmetic (T ...)
+taken from the site http://lhs-blog.info/programming/dlang/proverka-lyubogo-tipa-na-prinadlezhnost-k-chislovyim/
+For which the author of this code thanks a lot
+Type checking for belonging to numeric
 */
 template isNumberType(T)
 {
@@ -57,10 +65,59 @@ if (T.length >= 1)
 	enum bool allArithmetic = allSatisfy!(isNumberType, T);
 }
 
+/*
+Перевод в троичную систему счисления
+
+*/
+string decToTri(int a)
+{
+	string res;
+	int _mod, _div,temp;
+	do
+	{
+		_mod = a/3;
+		_div = a%3;
+		temp = _mod*3;
+		res =to!string(a-temp) ~ res;
+		a = _mod;
+	}
+	while (_mod >0);
+	return res;
+}
+
 unittest {
 	assert(validDate("2020-02-29"));
 	assert(validDate("2018-Apr-03"));
 	assert(!validDate("2020-14-29"));
 	assert(!validDate("2018-Agr-03"));
 	assert(!validDate("2018-02-29"));
+}
+
+string decToOther(int a, int base)
+{
+	string res;
+	int _mod, _div,temp;
+	do
+	{
+		_mod = a/base;
+		_div = a%base;
+		temp = _mod*base;
+		res =to!string(a-temp) ~ res;
+		a = _mod;
+	}
+	while (_mod >0);
+	return res;
+}
+
+unittest {
+	assert(validDate("2020-02-29"));
+	assert(validDate("2018-Apr-03"));
+	assert(!validDate("2020-14-29"));
+	assert(!validDate("2018-Agr-03"));
+	assert(!validDate("2018-02-29"));
+}
+
+unittest {
+	assert(decToTri(12345) == "121221020");
+	assert(!(decToTri(12345) == "11221020"));
 }
