@@ -198,45 +198,4 @@ class mydb{
 	}
 
 
-	
-unittest {
-	mydb myDB;
-	myDB = new.mydb();
-	myDB.host = "192.168.1.1";
-	assert(myDB.host == "192.168.1.1");
-	myDB.port = "3306";
-	assert(myDB.port == "3306");
-	myDB.user = "kvetal";
-	assert(myDB.user == "kvetal");
-	myDB.password = "kvetal";
-	assert(myDB.password == "kvetal");
-	myDB.dbname = "storage";
-	assert(myDB.dbname == "storage");
-	myDB.table = "person";
-	assert(myDB.table == "person");
-	assert (myDB.connect() == true);
-	myDB.conn.close();
-	assert (myDB.connect("192.168.1.1","3306","kvetal","kvetal","storage") == true);
-	myDB.conn.close();
-}
 
-unittest {
-	mydb myDB;
-	myDB = new.mydb();
-	assert (myDB.connect("192.168.1.1","3306","kvetal","kvetal","storage") == true);
-	myDB.table = "person";
-	assert(myDB.table == "person");
-	ResultRange range = myDB.conn.query("SELECT * FROM "~"`"~myDB.table~"`");
-	writeln(range);
-	
-	
-	writeln("\n\n","range rowCount = ",range,"\n\n");
-	writeln("range colNameS :",range.colNames);
-	int id = 5;
-	writeln("-----------------------------");
-	range = myDB.conn.query("SELECT * FROM "~"`"~myDB.table~"` WHERE `id`="~to!string(id));
-	writeln(range);
-	writeln("-----------------------------");
-	myDB.conn.close();
-	
-}
